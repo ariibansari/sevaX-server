@@ -77,7 +77,7 @@ exports.login = async (req, res) => {
                                 res.status(500).json({ error: 'Internal server error' })
                             } else {
                                 console.log({ accessToken, refreshToken, name: result[0].name, email: result[0].email, role_id: result[0].role_id });
-                                res.status(200).json({ accessToken, refreshToken, user_id: result[0].user_id, name: result[0].name, email: result[0].email, role_id: result[0].role_id, isActive:result[0].isActive })
+                                res.status(200).json({ accessToken, refreshToken, user_id: result[0].user_id, name: result[0].name, email: result[0].email, role_id: result[0].role_id, isActive: result[0].isActive, profilePictureSrc: result[0].profilePictureSrc, phone: result[0].phone, address: result[0].address })
                             }
                         }
                     )
@@ -209,7 +209,6 @@ exports.needyRegistration = async (req, res) => {
                                 }
                                 console.log('Needy Added');
                                 res.status(200).send(true)
-                                db.end()
                             })
                         })
                     })

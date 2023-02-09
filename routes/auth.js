@@ -3,12 +3,11 @@ var db = require('../config/dbConnection')
 const authController = require('../controllers/authController')
 const multer = require('multer');
 const uuid = require('uuid').v4;
-const path = require('path')
 
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, 'uploads');
+        cb(null, 'uploads/rationCards');
     },
     filename: function (req, file, cb) {
         const {originalname} = file
