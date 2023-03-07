@@ -1,7 +1,6 @@
 const db = require("../config/dbConnection")
 const bcrypt = require("bcrypt")
 const JWT = require("jsonwebtoken");
-const multer = require('multer');
 
 const saltRounds = 10;
 
@@ -22,16 +21,6 @@ const generateRefreshToken = (name, email, role_id) => {
     )
 }
 
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, '../uploads/');
-    },
-    filename: function (req, file, cb) {
-        cb(null, file.originalname);
-    }
-});
-
-const upload = multer({ storage });
 
 // Authenticate User for Login
 exports.login = async (req, res) => {
