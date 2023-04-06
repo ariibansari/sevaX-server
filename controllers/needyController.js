@@ -65,7 +65,26 @@ exports.getAllRequestedItems = async (req, res) => {
     let query = `select item.*, users.profilePictureSrc, users.name as donor_name, item_requests.request_status, item_requests.request_timestamp from item
     left join users on users.user_id=item.user_id
     left join item_requests on item_requests.item_id=item.item_id
-    where item.item_id IN (select item_id from item_requests where user_id='${user_id}') and item_requests.user_id='${user_id}'
+    where item.item_id IN (select item_id from item_requests where user_id='${user_id}' and request_status!=1) and item_requests.user_id='${user_id}'
+    ${limit ? `limit ${limit}` : ''}`
+    db.query(query, (err, result) => {
+        if (err) {
+            console.log(err);
+            res.status(500).json({ error: 'Cannot not fetch items at the moment, please try again later' })
+        }
+        res.status(200).send(result)
+    })
+
+}
+
+exports.getAllAcceptedItems = async (req, res) => {
+    const { limit, user_id } = req.body
+
+    let query = `select item.*, users.profilePictureSrc, users.name as donor_name, item_requests.request_status, delivery_details.delivery_status, item_requests.request_timestamp from item
+    left join users on users.user_id=item.user_id
+    left join item_requests on item_requests.item_id=item.item_id
+    left join delivery_details on delivery_details.item_id=item.item_id
+    where item.item_id IN (select item_id from item_requests where user_id='${user_id}' and request_status=1) and item_requests.user_id='${user_id}'
     ${limit ? `limit ${limit}` : ''}`
     db.query(query, (err, result) => {
         if (err) {

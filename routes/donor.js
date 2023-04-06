@@ -1,7 +1,7 @@
 const router = require("express").Router()
 var db = require('../config/dbConnection')
 const multer = require('multer');
-const { addItem, allItemsOfDonor, getItemDetails, getItemRequestList } = require("../controllers/donorController");
+const { addItem, allItemsOfDonor, getItemDetails, getItemRequestList, selectNeedyForDelivery, getItemDeliveryStatus } = require("../controllers/donorController");
 const uuid = require('uuid').v4;
 
 
@@ -26,6 +26,8 @@ router.post('/items', allItemsOfDonor)
 router.get('/item/:item_id', getItemDetails)
 
 router.post('/item/requestList', getItemRequestList)
+router.post('/item/deliveryStatus', getItemDeliveryStatus)
+router.post('/item/acceptRequest', selectNeedyForDelivery)
 
 
 
