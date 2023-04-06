@@ -15,10 +15,7 @@ Steps to local setup
     seva_x
 
 ### 5 - import the .sql file to the database from
-    sevaX-server > db > sevaX.sql
-
-### 2 - add the .env file in the main folder and update the following variables values in .env file
-    DB_USER, DB_PASSWORD
+    sevaX-server > db > .sql(latest file)
 
 ### 6 - run the server with this command
     npm run dev
