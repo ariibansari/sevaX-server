@@ -23,7 +23,9 @@ exports.getRequestStatusForItem = async (req, res) => {
     console.log(user_id, ' - ', item_id);
 
     if (user_id) {     //means all the value are present
-        let query = `select * from item_requests where user_id=? and item_id=?`
+        let query = `select item_requests.*, delivery_details.delivery_code, delivery_details.updated_at as delivered_at, delivery_details.delivery_status from item_requests 
+        left join delivery_details on delivery_details.item_id=item_requests.item_id
+        where item_requests.user_id=? and item_requests.item_id=?`
         db.query(query, [user_id, item_id], (err, result) => {
             if (err) {
                 console.log(err);
@@ -80,7 +82,7 @@ exports.getAllRequestedItems = async (req, res) => {
 exports.getAllAcceptedItems = async (req, res) => {
     const { limit, user_id } = req.body
 
-    let query = `select item.*, users.profilePictureSrc, users.name as donor_name, item_requests.request_status, delivery_details.delivery_status, item_requests.request_timestamp from item
+    let query = `select item.*,delivery_details.delivery_code, delivery_details.updated_at as delivered_at, users.profilePictureSrc, users.name as donor_name, item_requests.request_status, delivery_details.delivery_status, item_requests.request_timestamp from item
     left join users on users.user_id=item.user_id
     left join item_requests on item_requests.item_id=item.item_id
     left join delivery_details on delivery_details.item_id=item.item_id

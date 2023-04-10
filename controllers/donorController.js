@@ -27,14 +27,16 @@ exports.allItemsOfDonor = async (req, res) => {
     console.log(user_id)
 
     if (user_id) {     //means all the value are present
-        let query = `select (select count(item_requests.id) from item_requests where item_requests.item_id=item.item_id) as request_count, item.* from item
+        let query = `select delivery_details.delivery_id, delivery_details.needy_id, users.profilePictureSrc, users.name as needy_name, delivery_details.delivery_status, delivery_details.updated_at as delivered_on, (select count(item_requests.id) from item_requests where item_requests.item_id=item.item_id) as request_count, item.* from item
+        left join delivery_details on delivery_details.item_id=item.item_id
+        left join users on users.user_id=delivery_details.needy_id
         where item.user_id=? order by item.item_id desc`
         db.query(query, user_id, (err, result) => {
             if (err) {
                 console.log(err);
                 res.status(500).json({ error: 'Cannot add item at the moment, please try again later' })
             }
-
+            console.log(result);
             res.status(200).send(result)
         })
     } else {
@@ -181,3 +183,36 @@ exports.selectNeedyForDelivery = async (req, res) => {
     }
 }
 
+exports.confirmDelivery = async (req, res) => {
+    const { delivery_id, delivery_code, user_id } = req.body
+    console.log(delivery_id, " - ", delivery_code, " - ", user_id);
+    if (delivery_id && delivery_code && user_id) {
+        //check delivery code
+        let checkCodeQuery = `select delivery_code from delivery_details where ??=? and ??=?`
+        db.query(checkCodeQuery, ["delivery_id", delivery_id, "donor_id", user_id], (err, deliveryDetails) => {
+            if (err) {
+                console.log(err);
+                return res.status(500).json({ error: 'Cannot confirm delivery at the moment, please try again later' })
+            }
+            console.log("delivery code - ", deliveryDetails[0].delivery_code);
+            if (deliveryDetails[0].delivery_code !== parseInt(delivery_code)) {
+                return res.status(400).json({ error: "Invalid delivery code" })
+            }
+            else {
+
+                //update delivery details
+                let confirmQuery = "update delivery_details set ??=? where ??=?"
+                db.query(confirmQuery, ["delivery_status", 1, "delivery_id", delivery_id], (err, result) => {
+                    if (err) {
+                        console.log(err);
+                        return res.status(500).json({ error: 'Cannot confirm delivery at the moment, please try again later' })
+                    }
+
+                    return res.send(true)
+                })
+            }
+        })
+    } else {
+        res.status(500).json({ error: 'Cannot confirm delivery at the moment, please try again later' })
+    }
+}
