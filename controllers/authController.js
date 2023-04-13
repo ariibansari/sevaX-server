@@ -145,11 +145,13 @@ exports.emailCheck = async (req, res) => {
 }
 
 exports.needyRegistration = async (req, res) => {
-    const { name, phone, email, address, password, noOfFamilyMembers, totalEarningMembers, isHeadOfFamily, yearlyIncome, sourceOfIncome, rationCardFile } = req.body
-    // console.log(req.file)
-    const fileSrc = `${req.file.destination}/${req.file.filename}`
-    console.log(name, ' - ', phone, ' - ', email, ' - ', address, ' - ', password, ' - ', noOfFamilyMembers, ' - ', totalEarningMembers, ' - ', isHeadOfFamily, ' - ', yearlyIncome, ' - ', sourceOfIncome, ' - ', fileSrc);
-    if (name !== '' || phone !== '' || email !== '' || address !== '' || password !== '' || noOfFamilyMembers !== '' || totalEarningMembers !== '' || isHeadOfFamily !== '' || yearlyIncome !== '' || sourceOfIncome !== '' || fileSrc !== '') {     //means all the value are present
+    const { name, phone, email, address, password, noOfFamilyMembers, totalEarningMembers, isHeadOfFamily, yearlyIncome, sourceOfIncome, rationCardType, noteForAdmin } = req.body
+    console.log(req.files);
+    const aadharCardFileSrc = `${req.files.aadharCardFile[0].destination}/${req.files.aadharCardFile[0].filename}`
+    const rationCardFileSrc = `${req.files.rationCardFile[0].destination}/${req.files.rationCardFile[0].filename}`
+    console.log(aadharCardFileSrc);
+    console.log(rationCardFileSrc);
+    if (name && phone && email && address && password && noOfFamilyMembers && totalEarningMembers && isHeadOfFamily && yearlyIncome && sourceOfIncome && rationCardFileSrc && aadharCardFileSrc) {    //means all the value are present
         //check if email is laready taken
         let emailCheckQuery = 'select user_id from users where email=?'
         db.query(emailCheckQuery, email, async (err, ids) => {
@@ -180,8 +182,7 @@ exports.needyRegistration = async (req, res) => {
                                 res.status(500).json({ error: 'Could not register you at the moment, please try again later' })
                             })
                         }
-                        // console.log('xxxxxxxxx  --  ', result);
-                        let insertNeedyQuery = `insert into needy (user_id, isHeadOfFamily, sourceOfIncome, noOfFamilyMembers, yearlyIncome, rationCardSrc, isVerified, totalEarningMembersInFamily) VALUES ('${result.insertId}', '${isHeadOfFamily ? 1 : 0}', '${sourceOfIncome}', '${noOfFamilyMembers}', '${yearlyIncome}', '${fileSrc}', '0', '${totalEarningMembers}')`
+                        let insertNeedyQuery = `insert into needy (user_id, isHeadOfFamily, sourceOfIncome, noOfFamilyMembers, yearlyIncome, rationCardSrc, rationCardType, aadharCardSrc, isVerified, totalEarningMembersInFamily, noteForAdmin) VALUES ('${result.insertId}', '${isHeadOfFamily ? 1 : 0}', '${sourceOfIncome}', '${noOfFamilyMembers}', '${yearlyIncome}', '${rationCardFileSrc}', '${rationCardType}', '${aadharCardFileSrc}', '0', '${totalEarningMembers}', '${noteForAdmin}')`
                         db.query(insertNeedyQuery, (errors, results) => {
                             if (errors) {
                                 return db.rollback(() => {
