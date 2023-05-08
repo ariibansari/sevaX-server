@@ -7,7 +7,9 @@ exports.getAllItemsOnDonation = async (req, res) => {
     let query = `select item.*, users.profilePictureSrc, users.name as donor_name from item
     left join users on users.user_id=item.user_id
     where item.item_id NOT IN (select item_id from item_requests where user_id='${user_id}')
-    ${limit ? `limit ${limit}` : ''}`
+    order by item.creationTimestamp desc
+    ${limit ? `limit ${limit}` : ''}
+    `
     db.query(query, (err, result) => {
         if (err) {
             console.log(err);
@@ -40,13 +42,13 @@ exports.getRequestStatusForItem = async (req, res) => {
 }
 
 exports.requestForItem = async (req, res) => {
-    const { user_id, item_id } = req.body
+    const { user_id, item_id, request_message } = req.body
 
-    console.log(user_id)
+    console.log('requesting for item - ', user_id)
 
     if (user_id) {     //means all the value are present
-        let query = `insert into item_requests (item_id, user_id) values (?, ?)`
-        db.query(query, [item_id, user_id], (err, result) => {
+        let query = `insert into item_requests (item_id, user_id, request_message) values (?, ?, ?)`
+        db.query(query, [item_id, user_id, request_message], (err, result) => {
             if (err) {
                 console.log(err);
                 res.status(500).json({ error: 'Cannot add item at the moment, please try again later' })
@@ -69,6 +71,7 @@ exports.getAllRequestedItems = async (req, res) => {
     left join item_requests on item_requests.item_id=item.item_id
     where item.item_id IN (select item_id from item_requests where user_id='${user_id}' and request_status!=1) and item_requests.user_id='${user_id}'
     ${limit ? `limit ${limit}` : ''}`
+    console.log(query);
     db.query(query, (err, result) => {
         if (err) {
             console.log(err);

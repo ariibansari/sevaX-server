@@ -1,6 +1,6 @@
 const router = require("express").Router()
 var db = require('../config/dbConnection')
-const { getAllItemsOnDonation, getRequestStatusForItem, requestForItem, getAllRequestedItems, getAllAcceptedItems } = require("../controllers/needyController")
+const { getAllItemsOnDonation, getRequestStatusForItem, requestForItem, getAllRequestedItems, getAllAcceptedItems, getLatestRequests } = require("../controllers/needyController")
 
 router.post('/getAllItemsOnDonation', getAllItemsOnDonation)
 router.post('/getAllRequestedItems', getAllRequestedItems)

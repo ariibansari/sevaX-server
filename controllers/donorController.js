@@ -1,5 +1,24 @@
 const db = require("../config/dbConnection")
 
+exports.getLatestRequests = async (req, res) => {
+    const { limit, user_id } = req.body
+
+    let query = `select item.item_id, item.name as item_name, item.description as item_description, item.pictureSrc as item_pictureSrc, users.name as needy_name, users.profilePictureSrc as needy_profilePictureSrc from item_requests
+    left join users on users.user_id=item_requests.user_id
+    left join item on item.item_id=item_requests.item_id
+    where item_requests.item_id in (select item_id from item where user_id='${user_id}') and item_requests.request_status=0
+    ${limit ? `limit ${limit}` : ''}`
+    db.query(query, (err, result) => {
+        if (err) {
+            console.log(err);
+            res.status(500).json({ error: 'Cannot fetch requests at the moment, please try again later' })
+        }
+        console.log("latest requests - ",result);
+        res.status(200).send(result)
+    })
+
+}
+
 exports.addItem = async (req, res) => {
     const { name, description, user_id } = req.body
     const fileSrc = `${req.file.destination}/${req.file.filename}`
@@ -73,7 +92,7 @@ exports.getItemRequestList = async (req, res) => {
     console.log(item_id)
 
     if (item_id) {     //means all the value are present
-        let query = `select item_requests.*, users.name, users.profilePictureSrc, needy.sourceOfIncome, needy.noOfFamilyMembers, needy.yearlyIncome, needy.rationCardSrc, needy.isHeadOfFamily from item_requests 
+        let query = `select item_requests.*, users.name, users.profilePictureSrc, needy.aadharCardSrc, needy.sourceOfIncome, needy.noOfFamilyMembers, needy.yearlyIncome, needy.rationCardSrc, needy.isHeadOfFamily from item_requests 
         left join users on users.user_id=item_requests.user_id
         left join needy on needy.user_id=item_requests.user_id
         where item_requests.item_id=?`
@@ -88,15 +107,15 @@ exports.getItemRequestList = async (req, res) => {
     } else {
         res.status(500).json({ error: 'Cannot get item request list at the moment, please try again later' })
     }
-
 }
 
 exports.getItemDeliveryStatus = async (req, res) => {
     const { item_id } = req.body
     if (item_id) {
-        let fetchQuery = `select delivery_details.*, users.name, users.phone, users.email, users.profilePictureSrc, needy.sourceOfIncome, needy.noOfFamilyMembers, needy.yearlyIncome, needy.rationCardSrc, needy.isHeadOfFamily from delivery_details
+        let fetchQuery = `select delivery_details.*, item.name as item_name, users.name, users.phone, users.email, users.profilePictureSrc, needy.sourceOfIncome, needy.noOfFamilyMembers, needy.yearlyIncome, needy.rationCardSrc, needy.isHeadOfFamily from delivery_details
         left join needy on needy.user_id=delivery_details.needy_id
         left join users on users.user_id=needy.user_id
+        left join item on item.item_id=delivery_details.item_id
         where delivery_details.item_id=?`
         db.query(fetchQuery, item_id, (err, result) => {
             if (err) {

@@ -1,7 +1,7 @@
 const router = require("express").Router()
 var db = require('../config/dbConnection')
 const multer = require('multer');
-const { addItem, allItemsOfDonor, getItemDetails, getItemRequestList, selectNeedyForDelivery, getItemDeliveryStatus, confirmDelivery } = require("../controllers/donorController");
+const { addItem, allItemsOfDonor, getItemDetails, getItemRequestList, selectNeedyForDelivery, getItemDeliveryStatus, confirmDelivery, getLatestRequests } = require("../controllers/donorController");
 const uuid = require('uuid').v4;
 
 
@@ -20,6 +20,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 router.post('/addItem', upload.single('itemPicture'), addItem)
+router.post('/getLatestRequests', getLatestRequests)
 
 router.post('/items', allItemsOfDonor)
 
