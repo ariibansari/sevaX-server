@@ -16,7 +16,10 @@ app.use("/users", require("./routes/users"));
 app.use("/donor", require("./routes/donor"));
 app.use("/needy", require("./routes/needy"));
 
+app.get('/', (req, res) => {
+    return res.status(200).json({ message: 'seva_x server is live' })
+})
 
-app.listen(5000, ()=>{
+app.listen(5000, () => {
     console.log('Server started at port 5000')
 })
