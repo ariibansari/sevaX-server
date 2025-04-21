@@ -9,7 +9,7 @@ exports.getAllNeedyRequests = async (req, res) => {
     left join needy on needy.user_id=users.user_id
     where users.role_id=1 and needy.isVerified=0`
 
-    db.query(query, (err, results) => {
+    db.query(query, [], (err, results) => {
         if (err) {
             console.log(err);
             res.status(500).json({ error: "could not fetch data for 'needy' at the moment" })
@@ -22,7 +22,7 @@ exports.getNoOfDonors = async (req, res) => {
     let query =
         `select count(user_id) as noOfDonors from users where users.role_id='2'`
 
-    db.query(query, (err, results) => {
+    db.query(query, [], (err, results) => {
         if (err) {
             console.log(err);
             res.status(500).json({ error: "could not fetch data at the moment" })
@@ -37,7 +37,7 @@ exports.getDonorStats = async (req, res) => {
         left join (select users.* from users where users.role_id='2') as totalDonors on totalDonors.user_id=users.user_id
         left join (select users.* from users where users.role_id='2' and date(users.registrationTimeStamp)=current_date()) as donorsRegisteredToday on donorsRegisteredToday.user_id=users.user_id`
 
-    db.query(query, (err, results) => {
+    db.query(query, [], (err, results) => {
         if (err) {
             console.log(err);
             res.status(500).json({ error: "could not fetch data at the moment" })
@@ -53,7 +53,7 @@ exports.getNeedyStats = async (req, res) => {
         left join (select users.* from users where users.role_id=1) as totalNeedy on totalNeedy.user_id=users.user_id
         left join (select users.* from users where users.role_id=1 and date(users.registrationTimeStamp)=current_date()) as needyRegisteredToday on needyRegisteredToday.user_id=users.user_id`
 
-    db.query(query, (err, results) => {
+    db.query(query, [], (err, results) => {
         if (err) {
             console.log(err);
             res.status(500).json({ error: "could not fetch data at the moment" })
@@ -69,7 +69,7 @@ exports.acceptNeedyRequest = async (req, res) => {
     let query =
         `update needy set isVerified='1' where needy_id='${needy_id}'`
 
-    db.query(query, (err, results) => {
+    db.query(query, [], (err, results) => {
         if (err) {
             console.log(err);
             res.status(500).json({ error: "could not update data at the moment" })
@@ -84,7 +84,7 @@ exports.rejectNeedyRequest = async (req, res) => {
     let query =
         `update needy set isVerified='2' where needy_id='${needy_id}'`
 
-    db.query(query, (err, results) => {
+    db.query(query, [], (err, results) => {
         if (err) {
             console.log(err);
             res.status(500).json({ error: "could not update data at the moment" })
@@ -99,7 +99,7 @@ exports.getAllNeedy = async (req, res) => {
     left join needy on needy.user_id=users.user_id
     where users.role_id=1 and needy.isVerified!=0`
 
-    db.query(query, (err, results) => {
+    db.query(query, [], (err, results) => {
         if (err) {
             console.log(err);
             res.status(500).json({ error: "could not fetch data for 'needy' at the moment" })
@@ -113,7 +113,7 @@ exports.getAllDonors = async (req, res) => {
         `select users.* from users
     where users.role_id=2`
 
-    db.query(query, (err, results) => {
+    db.query(query, [], (err, results) => {
         if (err) {
             console.log(err);
             res.status(500).json({ error: "could not fetch data for 'donor' at the moment" })
@@ -128,7 +128,7 @@ exports.disableUser = async (req, res) => {
     let query =
         `update users set isActive='0' where user_id='${user_id}'`
 
-    db.query(query, (err, results) => {
+    db.query(query, [], (err, results) => {
         if (err) {
             console.log(err);
             res.status(500).json({ error: "could not change status at the moment" })
@@ -141,7 +141,7 @@ exports.activateUser = async (req, res) => {
     let query =
         `update users set isActive='1' where user_id='${user_id}'`
 
-    db.query(query, (err, results) => {
+    db.query(query, [], (err, results) => {
         if (err) {
             console.log(err);
             res.status(500).json({ error: "could not change status at the moment" })

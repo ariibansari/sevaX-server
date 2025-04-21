@@ -6,7 +6,7 @@ const uuid = require('uuid').v4;
 
 //to fix wait_tieout issue (econn_reset error)
 setInterval(() => {
-    db.query('select 1', (err, result) => {
+    db.query('select 1', [], (err, result) => {
         if (err) {
             console.log(err);
         }

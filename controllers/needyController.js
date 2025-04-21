@@ -10,7 +10,7 @@ exports.getAllItemsOnDonation = async (req, res) => {
     order by item.creationTimestamp desc
     ${limit ? `limit ${limit}` : ''}
     `
-    db.query(query, (err, result) => {
+    db.query(query, [], (err, result) => {
         if (err) {
             console.log(err);
             res.status(500).json({ error: 'Cannot not fetch items at the moment, please try again later' })
@@ -72,7 +72,7 @@ exports.getAllRequestedItems = async (req, res) => {
     where item.item_id IN (select item_id from item_requests where user_id='${user_id}' and request_status!=1) and item_requests.user_id='${user_id}'
     ${limit ? `limit ${limit}` : ''}`
     console.log(query);
-    db.query(query, (err, result) => {
+    db.query(query, [], (err, result) => {
         if (err) {
             console.log(err);
             res.status(500).json({ error: 'Cannot not fetch items at the moment, please try again later' })
@@ -91,7 +91,7 @@ exports.getAllAcceptedItems = async (req, res) => {
     left join delivery_details on delivery_details.item_id=item.item_id
     where item.item_id IN (select item_id from item_requests where user_id='${user_id}' and request_status=1) and item_requests.user_id='${user_id}'
     ${limit ? `limit ${limit}` : ''}`
-    db.query(query, (err, result) => {
+    db.query(query, [], (err, result) => {
         if (err) {
             console.log(err);
             res.status(500).json({ error: 'Cannot not fetch items at the moment, please try again later' })

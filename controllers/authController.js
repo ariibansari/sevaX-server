@@ -60,6 +60,7 @@ exports.login = async (req, res) => {
                     //save refresh token in database
                     db.query(
                         `insert into refresh_token (refresh_token) values ('${refreshToken}')`,
+                        [],
                         (err, inserted) => {
                             if (err) {
                                 console.log(err);
@@ -106,7 +107,7 @@ exports.donorRegistration = async (req, res) => {
 
                 //save user's data in database
                 let insertUserQuery = `insert into users (name, password, email, phone, address, role_id, isActive) values ('${name}', '${hashedPassword}', '${email}', '${phone}', '${address}', '2', '1')`
-                db.query(insertUserQuery, (err, result) => {
+                db.query(insertUserQuery, [], (err, result) => {
                     if (err) {
                         res.status(500).send('Could not register you at the moment, please try again later')
                         console.log(err);
@@ -165,44 +166,59 @@ exports.needyRegistration = async (req, res) => {
             }
             else {
 
-                //make password hash
-                const salt = await bcrypt.genSalt(saltRounds);
-                const hashedPassword = await bcrypt.hash(password, salt);
+                try {
+                    const salt = await bcrypt.genSalt(saltRounds);
+                    const hashedPassword = await bcrypt.hash(password, salt);
 
-                db.beginTransaction(err => {
-                    if (err) {
-                        console.log(err);
-                        res.status(500).json({ error: 'Could not register you at the moment, please try again later' })
+                    const connection = await db.pool.getConnection();
+
+                    try {
+                        await connection.beginTransaction();
+
+                        const insertUserQuery = `
+                            INSERT INTO users 
+                            (name, password, email, phone, address, role_id, isActive) 
+                            VALUES (?, ?, ?, ?, ?, '1', '1')
+                        `;
+                        const [userResult] = await connection.query(insertUserQuery, [
+                            name, hashedPassword, email, phone, address
+                        ]);
+
+                        const insertNeedyQuery = `
+                            INSERT INTO needy 
+                            (user_id, isHeadOfFamily, sourceOfIncome, noOfFamilyMembers, yearlyIncome, 
+                            rationCardSrc, rationCardType, aadharCardSrc, isVerified, totalEarningMembersInFamily, noteForAdmin)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, '0', ?, ?)
+                        `;
+                        await connection.query(insertNeedyQuery, [
+                            userResult.insertId,
+                            isHeadOfFamily ? 1 : 0,
+                            sourceOfIncome,
+                            noOfFamilyMembers,
+                            yearlyIncome,
+                            rationCardFileSrc,
+                            rationCardType,
+                            aadharCardFileSrc,
+                            totalEarningMembers,
+                            noteForAdmin
+                        ]);
+
+                        await connection.commit();
+                        console.log('Needy Added');
+                        res.status(200).send(true);
+
+                    } catch (err) {
+                        await connection.rollback();
+                        console.error("Registration transaction failed:", err);
+                        res.status(500).json({ error: 'Could not register you at the moment, please try again later' });
+                    } finally {
+                        connection.release();
                     }
-                    let insertUserQuery = `insert into users (name, password, email, phone, address, role_id, isActive) values ('${name}', '${hashedPassword}', '${email}', '${phone}', '${address}', '1', '1')`
-                    db.query(insertUserQuery, (error, result) => {
-                        if (error) {
-                            return db.rollback(() => {
-                                console.log(error);
-                                res.status(500).json({ error: 'Could not register you at the moment, please try again later' })
-                            })
-                        }
-                        let insertNeedyQuery = `insert into needy (user_id, isHeadOfFamily, sourceOfIncome, noOfFamilyMembers, yearlyIncome, rationCardSrc, rationCardType, aadharCardSrc, isVerified, totalEarningMembersInFamily, noteForAdmin) VALUES ('${result.insertId}', '${isHeadOfFamily ? 1 : 0}', '${sourceOfIncome}', '${noOfFamilyMembers}', '${yearlyIncome}', '${rationCardFileSrc}', '${rationCardType}', '${aadharCardFileSrc}', '0', '${totalEarningMembers}', '${noteForAdmin}')`
-                        db.query(insertNeedyQuery, (errors, results) => {
-                            if (errors) {
-                                return db.rollback(() => {
-                                    console.log(errors);
-                                    res.status(500).json({ error: 'Could not register you at the moment, please try again later' })
-                                })
-                            }
-                            db.commit(error => {
-                                if (error) {
-                                    return db.rollback(() => {
-                                        console.log(error);
-                                        res.status(500).json({ error: 'Could not register you at the moment, please try again later' })
-                                    })
-                                }
-                                console.log('Needy Added');
-                                res.status(200).send(true)
-                            })
-                        })
-                    })
-                })
+                } catch (err) {
+                    console.error("Unexpected error during registration:", err);
+                    res.status(500).json({ error: 'Internal server error' });
+                }
+
             }
         })
 
@@ -219,7 +235,7 @@ exports.getNeedyVerificationStatus = async (req, res) => {
     let query =
         `select isVerified from needy where user_id=${user_id}`
 
-    db.query(query, (err, results) => {
+    db.query(query, [], (err, results) => {
         if (err) {
             console.log(err);
             res.status(500).json({ error: "could not log you in at the moment, please try again later" })

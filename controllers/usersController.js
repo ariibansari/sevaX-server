@@ -26,7 +26,7 @@ exports.changeProfilePicture = async (req, res) => {
 
     if (user_id) {
         let selectSrcQuery = `select profilePictureSrc from users where user_id='${user_id}'`
-        db.query(selectSrcQuery, (error, result) => {
+        db.query(selectSrcQuery, [], (error, result) => {
             if (error) {
                 console.log(error);
                 res.status(500).json({ error: 'Could not update profile picture, please try again later' })
@@ -44,7 +44,7 @@ exports.changeProfilePicture = async (req, res) => {
                         //upadate src in db
                         const fileSrc = `${req.file.destination}/${req.file.filename}`
                         let query = `update users set profilePictureSrc='${fileSrc}' where user_id='${user_id}'`
-                        db.query(query, (err, results) => {
+                        db.query(query, [], (err, results) => {
                             if (err) {
                                 console.log(err);
                                 res.status(500).json({ error: 'Could not update profile picture, please try again later' })
@@ -60,7 +60,7 @@ exports.changeProfilePicture = async (req, res) => {
                 console.log('Uploading new profile picture src to db');
                 const fileSrc = `${req.file.destination}/${req.file.filename}`
                 let query = `update users set profilePictureSrc='${fileSrc}' where user_id='${user_id}'`
-                db.query(query, (err, results) => {
+                db.query(query, [], (err, results) => {
                     if (err) {
                         console.log(err);
                         res.status(500).json({ error: 'Could not update profile picture, please try again later' })
@@ -86,7 +86,7 @@ exports.updateProfile = async (req, res) => {
 
         if (editingField === 'password') { //check if current password matches if it does then update the password
             const getPasswordQuery = `select password from users where user_id='${user_id}'`
-            db.query(getPasswordQuery, async (err, result) => {
+            db.query(getPasswordQuery, [], async (err, result) => {
                 if (err) {
                     console.log(err);
                     res.status(500).json({ error: 'Could not update profile, please try again later' })
@@ -103,7 +103,7 @@ exports.updateProfile = async (req, res) => {
                         const hashedPassword = await bcrypt.hash(newValue, salt);
 
                         let updateQuery = `update users set password='${hashedPassword}' where user_id='${user_id}'`
-                        db.query(updateQuery, (error, result) => {
+                        db.query(updateQuery, [], (error, result) => {
                             if (error) {
                                 console.log(error);
                                 res.status(500).json({ error: 'Could not update profile, please try again later' })
@@ -117,7 +117,7 @@ exports.updateProfile = async (req, res) => {
         }
         else if (editingField === 'email') {    //check if email is taken by some other user if not then update the email
             const checkEmailQuery = `select user_id from users where email='${newValue}'`
-            db.query(checkEmailQuery, (err, ids) => {
+            db.query(checkEmailQuery, [], (err, ids) => {
                 if (err) {
                     console.log(err);
                     res.status(500).json({ error: 'Could not update profile, please try again later' })
@@ -126,7 +126,7 @@ exports.updateProfile = async (req, res) => {
                     res.status(400).json({ fieldName: editingField, error: 'User with this email already exist, try other email' })
                 } else {
                     let updateQuery = `update users set ${editingField}='${newValue}' where user_id='${user_id}'`
-                    db.query(updateQuery, (error, result) => {
+                    db.query(updateQuery, [], (error, result) => {
                         if (error) {
                             console.log(error);
                             res.status(500).json({ error: 'Could not update profile, please try again later' })
@@ -139,7 +139,7 @@ exports.updateProfile = async (req, res) => {
         }
         else {
             let updateQuery = `update users set ${editingField}='${newValue}' where user_id='${user_id}'`
-            db.query(updateQuery, (error, result) => {
+            db.query(updateQuery, [], (error, result) => {
                 if (error) {
                     console.log(error);
                     res.status(500).json({ error: 'Could not update profile, please try again later' })

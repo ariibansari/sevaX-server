@@ -8,7 +8,7 @@ exports.getLatestRequests = async (req, res) => {
     left join item on item.item_id=item_requests.item_id
     where item_requests.item_id in (select item_id from item where user_id='${user_id}') and item_requests.request_status=0
     ${limit ? `limit ${limit}` : ''}`
-    db.query(query, (err, result) => {
+    db.query(query, [], (err, result) => {
         if (err) {
             console.log(err);
             res.status(500).json({ error: 'Cannot fetch requests at the moment, please try again later' })
@@ -26,7 +26,7 @@ exports.addItem = async (req, res) => {
     console.log(name, ' - ', description, ' - ', fileSrc);
     if (name !== '' || description !== '' || fileSrc !== '' || user_id !== '') {     //means all the value are present
         let insertItemQuery = `insert into item (name, description, pictureSrc, isActive, user_id) values ('${name}', '${description}', '${fileSrc}', '1', '${user_id}' )`
-        db.query(insertItemQuery, (err, result) => {
+        db.query(insertItemQuery, [], (err, result) => {
             if (err) {
                 console.log(err);
                 res.status(500).json({ error: 'Cannot add item at the moment, please try again later' })
